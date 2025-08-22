@@ -10,33 +10,32 @@ function convertToObject(sourceString) {
     return {};
   }
 
-  const str = sourceString.replace(/\t|\r/g, '').trim();
+  const trimmedSourceString = sourceString.replace(/\t|\r/g, '').trim();
 
-  if (!str) {
+  if (!trimmedSourceString) {
     return {};
   }
 
-  const out = {};
-  const re = /([-\w]+)\s*:\s*([\s\S]*?)(?:;|$)/g;
+  const matches = [
+    ...trimmedSourceString.matchAll(/([-\w]+)\s*:\s*([\s\S]*?)(?:;|$)/g),
+  ];
 
-  let m;
+  const stylesObject = matches.reduce((acc, m) => {
+    const property = m[1];
+    let value = (m[2] || '').trim();
 
-  while ((m = re.exec(str)) !== null) {
-    const prop = m[1];
-    let value = m[2] || '';
-
-    value = value.trim();
-
-    if (value.includes('\n')) {
-      if (!value.includes(',')) {
-        value = value.replace(/\s*\n+\s*/g, ' ');
-      }
+    if (value.includes('\n') && !value.includes(',')) {
+      value = value.replace(/\s*\n+\s*/g, ' ');
     }
 
-    out[prop] = value;
-  }
+    if (property) {
+      acc[property] = value;
+    }
 
-  return out;
+    return acc;
+  }, {});
+
+  return stylesObject;
 }
 
 module.exports = convertToObject;
